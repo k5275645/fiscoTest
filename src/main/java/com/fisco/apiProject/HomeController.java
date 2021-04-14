@@ -36,4 +36,19 @@ public class HomeController {
 		return "home";
 	}
 	
+	@RequestMapping(value = "/goYou", method = RequestMethod.GET)
+	public String goYou() {
+		return "yshTest";
+	}
+	
+	@RequestMapping(value = "/goSon", method = RequestMethod.GET)
+	public String goSon() {
+		return "eunspage";
+	}
+	
+	@RequestMapping(value = "/goKim", method = RequestMethod.GET)
+	public String goSungHwan() {
+		return "knh";
+	}
+	
 }
