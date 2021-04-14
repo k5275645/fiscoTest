@@ -19,7 +19,7 @@
 <button onclick="goKim()">김 API new clone test</button>
 
 <script>
-function goSungHwan(){
+function goYou(){
 	location.href = "goYou";
 }
 
