@@ -7,6 +7,6 @@
 <title>Insert title here</title>
 </head>
 <body>
-	YSHtest<br>
+	<input id="input_id" name="input_id" type="text" placeholder="Summoner ID..."><button>Search</button> 
 </body>
 </html>
