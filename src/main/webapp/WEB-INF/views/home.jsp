@@ -15,7 +15,7 @@
 
 <button onclick="goYou()">유 API</button>
 <button onclick="goSon()">손 API</button>
-<button onclick="goKim()">김 API new clone test</button>
+<button onclick="goKim()">김 API</button>
 
 <script>
 function goYou(){
