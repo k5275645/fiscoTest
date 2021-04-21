@@ -18,12 +18,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+@RequestMapping(value = "/search/*")
 @Controller
 public class SearchSummoner {
 
 	final static String API_KEY = "RGAPI-9bf90fed-bfed-4ee7-a79a-548649f22f16";
 	
-	@RequestMapping(value ="/search", method=RequestMethod.GET)
+	@RequestMapping(value ="do", method=RequestMethod.GET)
 	public String searchSummoner(Model model, HttpServletRequest httpServletRequest) {
 		BufferedReader br = null;
 		String SummonerName = httpServletRequest.getParameter("title");

@@ -9,7 +9,7 @@
 	<title>fisco.GG에 오신걸 환영합니다.</title>
 </head>
 <body>
-	<form action="/search" method="get">
+	<form action="/search/do" method="get">
 		<div>
 			<input type="text" placeholder="당신의 아이디를 검색하세요!" name="title">
 			<button type="submit">검색 !</button>
