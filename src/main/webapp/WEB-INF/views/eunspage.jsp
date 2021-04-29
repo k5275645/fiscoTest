@@ -1,16 +1,16 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="EUC-KR">
 <title>Insert title here</title>
 <script type="text/javascript">
-	// 기본 설정 날짜를 오늘로 설정
-	window.onload = function () {
+	// 기본 날짜 설정
+	window.onload = function() {
 		document.getElementById('now_date').valueAsDate = new Date();
 		var date = document.getElementById('now_date').value;
-		console.log(date);
+		document.getElementById('now_date').setAttribute('max',date);
 	}
 </script>
 <script type="text/javascript">
@@ -19,66 +19,257 @@
 		document.getElementById('Area').value = name;
 		return false;
 	}
-	
+
 	// xml search 결과 리턴
 	function showResult(f) {
 		var xhr = new XMLHttpRequest();
 		var area = f.Area.value;
-		var startDt = f.now_date.value.replace(/-/gi,"");
-		
-		xhr.onreadystatechange = function () {
-			if (this.status == 200 && this.readyState == this.DONE) {
-				console.log(this.responseText);
+		var startDt = f.now_date.value.replace(/-/gi, "");
+		console.log(startDt);
+		if (area==="검색할 지역을 선택해주세요") {
+			return alert("지역을 먼저 선택한 후 검색해주세요");
+		}else {
+			xhr.open("POST", "rest/findCovidArea?area=" + area + "&startDt="
+					+ startDt);
+			xhr.send(); 
+			
+ 			xhr.onreadystatechange = function() {
+				if (this.status == 200 && this.readyState == this.DONE) {
+					var DTO = JSON.parse(this.responseText);
+					if (DTO == null) {
+						alert("오늘의 정보가 아직 업데이트되지 않았습니다.");
+					}else {
+						var div = document.getElementById("resultForm");
+						var tableString = "";
+						if (DTO.gubun == "합계") {
+							tableString += "<table><thead><tr><th colspan='4'>"+DTO.createDt.substring(0,10)+" / "+DTO.gubun+"</th></tr><tr><th>확진환자</th><th>검사중</th><th>격리해제</th><th>사망자</th></tr></thead>";
+							tableString += "<tbody><tr><td>"+DTO.defCnt+"<span class='red'>( "+DTO.incDec+" ▲ )</span></td><td>"+DTO.isolIngCnt+"(  ▲ )</td><td>"+DTO.isolClearCnt+"(  ▲ )</td><td>"+DTO.deathCnt+"(  ▲ )</td></tr>";
+							tableString += "<tr><td colspan='2'><span class='red'>국내발생 "+DTO.localOccCnt+"</td><td colspan='2'><span class='blue'>해외유입 "+DTO.overFlowCnt+"</span></td></tr>"
+							tableString += "</tbody></table>";
+						}else if (DTO.gubun == "검역") {
+							tableString += "<table><thead><tr><th colspan='5'>"+DTO.createDt.substring(0,10)+" / "+DTO.gubun+"</th></tr><tr><th>누적확진자</th><th><span class='red'>신규확진자</span></th><th>격리 해제 수</th><th>격리중 확진자</th><th>인구 10만명당 발생율</th></tr></thead>";
+							tableString += "<tbody><tr><td>"+DTO.defCnt+"</td><td><span class='red'>"+DTO.incDec+"</span></td><td>"+DTO.isolClearCnt+"</td><td>"+DTO.isolIngCnt+"</td><td>-</td>";
+							tableString += "</tr></tbody></table>";
+						}else {
+							tableString += "<table><thead><tr><th colspan='5'>"+DTO.createDt.substring(0,10)+" / "+DTO.gubun+"</th></tr><tr><th>누적확진자</th><th><span class='red'>신규확진자</span></th><th>격리 해제 수</th><th>격리중 확진자</th><th>인구 10만명당 발생율</th></tr></thead>";
+							tableString += "<tbody><tr><td>"+DTO.defCnt+"</td><td><span class='red'>"+DTO.incDec+"</span></td><td>"+DTO.isolClearCnt+"</td><td>"+DTO.isolIngCnt+"</td><td>"+DTO.qurRate+"</td>";
+							tableString += "</tr></tbody></table>";
+						}
+						div.innerHTML = tableString;
+						div.style.backgroundColor = "#eee";
+					}
+				}
 			}
 		}
-		xhr.open("POST","rest/findCovidArea?area="+area+"&startDt="+startDt);
-		xhr.send();
- 	}
-</script>
 
+
+	}
+</script>
+<style type="text/css">
+* {
+	box-sizing: border-box;
+}
+table{
+	border-collapse:collapse;
+	table-layout: auto;
+	width: 600px;
+	font-size: 12pt;
+}
+th{
+	padding: 5px 0px;
+	white-space: nowrap; 
+}
+td{
+	border-bottom: 1px solid red;
+	padding: 15px 5px; 
+	text-align: center;
+}
+body {
+	margin: 0px;
+}
+
+header {
+	background-color: #555;
+	padding: 30px 50px 50px 50px;
+	text-align: right;
+	font-size: 25px;
+	color: white;
+}
+
+section {
+	padding: 5px;
+}
+
+footer {
+	background-color: #555;
+	text-align: center;
+	color: white;
+	padding: 10px;
+}
+
+div {
+	box-sizing: border-box;
+}
+
+button{
+	border: 1px solid white;
+	border-radius: 5px;
+	padding: 3px 10px;
+	background-color: lightpink;
+}
+.red{
+	color: red;
+}
+.blue{
+	color: blue;
+}
+
+#a {
+	overflow: hidden; 
+	justify-content: center;
+	align-items: flex-start;
+	display: flex;
+}
+
+#map {
+	float: left;
+	padding: 5px;
+	/* background-color: grey; */
+}
+
+#user {
+	float: left;
+	padding: 10px;
+	height: inherit;
+}
+
+#resultForm {
+	height: auto;
+	padding: 50px;
+}
+
+#selectForm {
+}
+
+#show_res_btn{
+	width: 700px;
+	padding: 10px;
+	margin: 5px 0px;
+	box-sizing: border-box;
+	border: none;
+	background-color: pink;
+	font-size: 15px;
+	border-radius: 5px;
+}
+#show_res_btn:hover {
+	background-color: Palevioletred;
+}
+</style>
 </head>
 
 <body>
-<h1>FISCO</h1>
-<h3>코로나감염증 시도발생 현황 API PROJECT</h3>
-<form method="post">
-<input id="now_date" type="date"><br>
-<input type="text" id="Area" value="검색할 지역을 선택해주세요" disabled="disabled"><br>
-<button onclick="return selectAreaName(`합계`)">시도별 총합계</button>
-<button onclick="return selectAreaName(`검역`)">검역소</button><br><hr>
+
+	<header>
+		<h4>코로나감염증 시도발생 현황 API PROJECT</h4>
+	</header>
+	<section>
+		<div id="a">
+			<div id="map">
+				<!-- Image Map Generated by http://www.image-map.net/ -->
+
+				<img src="resources/img/map.jpg" usemap="#image-map">
 
 
-<input id="show_res_btn" type="button" onclick="showResult(this.form)"  value="검색결과보기"> 
-</form>
-
-<!-- Image Map Generated by http://www.image-map.net/ -->
-
-<img src="resources/img/map.jpg" usemap="#image-map">
-
-
-<map name="image-map">
-    <area target="" alt="강원도" title="강원도"  href="#" onclick="return selectAreaName(`강원`)" coords="447,14,436,48,408,66,371,63,353,53,320,62,300,57,264,62,278,89,286,81,291,96,312,96,312,116,337,140,320,150,319,168,318,186,359,204,348,214,354,228,342,275,371,280,366,268,379,266,380,273,429,273,418,283,451,293,488,307,517,303,562,314,579,297,580,278,550,229,548,215,538,205,538,194,509,161,507,149,480,105,481,91,463,44" shape="poly">
-    <area target="" alt="경기도" title="경기도" href="#"  onclick="return selectAreaName(`경기`)" coords="259,61,240,83,225,92,223,98,195,115,196,135,183,153,172,148,168,186,188,175,208,185,223,187,223,178,236,177,238,167,249,171,254,187,253,199,255,207,247,215,240,211,218,214,210,207,207,197,201,207,197,221,191,230,209,242,197,251,183,248,184,267,199,265,193,283,210,311,251,305,269,317,295,295,312,295,322,283,337,271,351,229,346,214,355,207,317,188,318,152,330,138,309,116,309,101,289,95,285,83,277,92" shape="poly">
-    <area target="" alt="서울특별시" title="서울특별시" href="#" onclick="return selectAreaName(`서울특별시`)" coords="247,174,250,187,251,198,253,205,248,211,240,212,229,211,217,209,213,200,208,187,223,190,226,179,237,181,238,170" shape="poly">
-    <area target="" alt="인천광역시" title="인천광역시" href="#" onclick="return selectAreaName(`인천`)" coords="202,188,185,178,171,183,176,196,178,211,189,220,198,220,199,209,200,200" shape="poly">
-    <area target="" alt="충청남도" title="충청남도" href="#" onclick="return selectAreaName(`충남`)" coords="271,319,247,309,208,314,192,298,158,280,127,287,92,335,124,395,139,449,172,477,190,467,195,453,223,456,232,472,265,465,272,486,289,491,295,480,304,491,312,478,304,447,292,442,285,449,276,440,267,451,261,444,262,413,251,384,244,371,246,350,267,358,288,347" shape="poly">
-    <area target="" alt="세종특별자치시" title="세종특별자치시" href="#" onclick="return selectAreaName(`세종`)" coords="266,357,245,351,244,368,254,379,259,405,268,407,275,399,275,387,262,367" shape="poly">
-    <area target="" alt="대전광역시" title="대전광역시" href="#" onclick="return selectAreaName(`대전`)" coords="290,400,278,398,267,407,261,407,263,443,269,446,277,440,286,446,294,440,288,437,298,427,293,416,301,411,293,407" shape="poly">
-    <area target="" alt="충청북도" title="충청북도" href="#" onclick="return selectAreaName(`충북`)" coords="472,306,417,285,424,274,385,273,375,267,368,270,372,280,345,280,339,274,311,295,294,296,273,316,290,349,266,358,262,367,279,392,292,398,292,404,302,412,298,417,299,427,293,435,306,447,311,477,327,486,335,484,356,483,363,457,372,457,369,445,344,442,344,428,354,394,340,384,361,378,353,367,364,358,380,364,378,348,395,342,400,345,409,337,424,353,442,344,440,331" shape="poly">
-    <area target="" alt="경상북도" title="경상북도" href="#" onclick="return selectAreaName(`경북`)" coords="581,301,560,316,514,306,499,307,486,312,474,308,440,330,445,344,427,353,410,341,402,349,391,344,383,347,384,367,365,361,358,366,369,380,348,383,353,391,348,435,375,443,375,458,366,461,357,487,343,488,344,510,369,524,388,549,380,556,407,564,415,569,409,553,420,553,412,538,415,516,429,506,445,502,469,500,477,516,471,535,462,546,459,557,443,556,437,565,446,579,474,581,504,572,516,568,529,558,550,565,552,573,576,574,590,539,600,498,659,316,647,282,622,284" shape="poly">
-    <area target="" alt="대구광역시" title="대구광역시" href="#" onclick="return selectAreaName(`대구`)" coords="418,567,432,568,439,551,453,552,460,546,464,539,470,531,473,519,468,504,448,504,435,508,419,514,417,535,422,555,412,557" shape="poly">
-    <area target="" alt="울산광역시" title="울산광역시" href="#" onclick="return selectAreaName(`울산`)" coords="543,566,527,561,514,569,505,576,505,588,523,604,535,615,538,624,548,630,559,626,559,607,564,599,570,603,575,588,574,578,554,576" shape="poly">
-    <area target="" alt="부산광역시" title="부산광역시" href="#" onclick="return selectAreaName(`부산`)" coords="524,626,508,645,483,655,470,661,478,671,496,679,513,672,535,664,548,634,538,624" shape="poly">
-    <area target="" alt="경상남도" title="경상남도" href="#" onclick="return selectAreaName(`경남`)" coords="343,509,364,524,387,548,380,560,412,569,433,569,444,580,477,584,501,576,507,596,533,620,519,630,509,642,463,662,477,673,458,671,462,683,453,729,434,742,336,733,319,719,315,699,314,683,308,681,318,673,299,645,289,620,304,595,293,570,315,527" shape="poly">
-    <area target="" alt="전라북도" title="전라북도" href="#" onclick="return selectAreaName(`전북`)" coords="343,489,328,486,315,478,305,490,300,485,290,494,270,488,265,469,231,474,223,461,199,458,178,479,150,483,159,502,131,547,128,577,142,602,165,593,171,576,198,588,210,579,213,607,232,606,249,611,264,608,280,603,292,612,305,598,290,570,311,525,344,504" shape="poly">
-    <area target="" alt="전라남도" title="전라남도" href="#" onclick="return selectAreaName(`전남`)" coords="287,615,273,606,259,612,209,604,207,581,194,588,174,578,170,593,146,599,121,577,97,614,50,635,23,696,54,774,118,824,181,820,181,763,206,747,230,771,258,764,274,742,312,748,315,732,315,697,303,680,312,667,292,643,202,638,197,649,177,651,161,652,154,643,143,638,149,621,163,612,177,616,190,617,200,628,208,638,293,644" shape="poly">
-    <area target="" alt="광주광역시" title="광주광역시" href="#" onclick="return selectAreaName(`광주`)" coords="200,633,187,621,160,617,150,624,146,636,163,650,182,649,196,647" shape="poly">
-    <area target="" alt="제주도" title="제주도" href="#" onclick="return selectAreaName(`제주`)" coords="678,644,619,670,619,694,642,704,667,699,683,707,727,691,741,674,740,655,722,641" shape="poly">
-</map>
-
+				<map name="image-map">
+					<area target="" alt="강원도" title="강원도" href="#"
+						onclick="return selectAreaName(`강원`)"
+						coords="447,14,436,48,408,66,371,63,353,53,320,62,300,57,264,62,278,89,286,81,291,96,312,96,312,116,337,140,320,150,319,168,318,186,359,204,348,214,354,228,342,275,371,280,366,268,379,266,380,273,429,273,418,283,451,293,488,307,517,303,562,314,579,297,580,278,550,229,548,215,538,205,538,194,509,161,507,149,480,105,481,91,463,44"
+						shape="poly">
+					<area target="" alt="경기도" title="경기도" href="#"
+						onclick="return selectAreaName(`경기`)"
+						coords="259,61,240,83,225,92,223,98,195,115,196,135,183,153,172,148,168,186,188,175,208,185,223,187,223,178,236,177,238,167,249,171,254,187,253,199,255,207,247,215,240,211,218,214,210,207,207,197,201,207,197,221,191,230,209,242,197,251,183,248,184,267,199,265,193,283,210,311,251,305,269,317,295,295,312,295,322,283,337,271,351,229,346,214,355,207,317,188,318,152,330,138,309,116,309,101,289,95,285,83,277,92"
+						shape="poly">
+					<area target="" alt="서울특별시" title="서울특별시" href="#"
+						onclick="return selectAreaName(`서울`)"
+						coords="247,174,250,187,251,198,253,205,248,211,240,212,229,211,217,209,213,200,208,187,223,190,226,179,237,181,238,170"
+						shape="poly">
+					<area target="" alt="인천광역시" title="인천광역시" href="#"
+						onclick="return selectAreaName(`인천`)"
+						coords="202,188,185,178,171,183,176,196,178,211,189,220,198,220,199,209,200,200"
+						shape="poly">
+					<area target="" alt="충청남도" title="충청남도" href="#"
+						onclick="return selectAreaName(`충남`)"
+						coords="271,319,247,309,208,314,192,298,158,280,127,287,92,335,124,395,139,449,172,477,190,467,195,453,223,456,232,472,265,465,272,486,289,491,295,480,304,491,312,478,304,447,292,442,285,449,276,440,267,451,261,444,262,413,251,384,244,371,246,350,267,358,288,347"
+						shape="poly">
+					<area target="" alt="세종특별자치시" title="세종특별자치시" href="#"
+						onclick="return selectAreaName(`세종`)"
+						coords="266,357,245,351,244,368,254,379,259,405,268,407,275,399,275,387,262,367"
+						shape="poly">
+					<area target="" alt="대전광역시" title="대전광역시" href="#"
+						onclick="return selectAreaName(`대전`)"
+						coords="290,400,278,398,267,407,261,407,263,443,269,446,277,440,286,446,294,440,288,437,298,427,293,416,301,411,293,407"
+						shape="poly">
+					<area target="" alt="충청북도" title="충청북도" href="#"
+						onclick="return selectAreaName(`충북`)"
+						coords="472,306,417,285,424,274,385,273,375,267,368,270,372,280,345,280,339,274,311,295,294,296,273,316,290,349,266,358,262,367,279,392,292,398,292,404,302,412,298,417,299,427,293,435,306,447,311,477,327,486,335,484,356,483,363,457,372,457,369,445,344,442,344,428,354,394,340,384,361,378,353,367,364,358,380,364,378,348,395,342,400,345,409,337,424,353,442,344,440,331"
+						shape="poly">
+					<area target="" alt="경상북도" title="경상북도" href="#"
+						onclick="return selectAreaName(`경북`)"
+						coords="581,301,560,316,514,306,499,307,486,312,474,308,440,330,445,344,427,353,410,341,402,349,391,344,383,347,384,367,365,361,358,366,369,380,348,383,353,391,348,435,375,443,375,458,366,461,357,487,343,488,344,510,369,524,388,549,380,556,407,564,415,569,409,553,420,553,412,538,415,516,429,506,445,502,469,500,477,516,471,535,462,546,459,557,443,556,437,565,446,579,474,581,504,572,516,568,529,558,550,565,552,573,576,574,590,539,600,498,659,316,647,282,622,284"
+						shape="poly">
+					<area target="" alt="대구광역시" title="대구광역시" href="#"
+						onclick="return selectAreaName(`대구`)"
+						coords="418,567,432,568,439,551,453,552,460,546,464,539,470,531,473,519,468,504,448,504,435,508,419,514,417,535,422,555,412,557"
+						shape="poly">
+					<area target="" alt="울산광역시" title="울산광역시" href="#"
+						onclick="return selectAreaName(`울산`)"
+						coords="543,566,527,561,514,569,505,576,505,588,523,604,535,615,538,624,548,630,559,626,559,607,564,599,570,603,575,588,574,578,554,576"
+						shape="poly">
+					<area target="" alt="부산광역시" title="부산광역시" href="#"
+						onclick="return selectAreaName(`부산`)"
+						coords="524,626,508,645,483,655,470,661,478,671,496,679,513,672,535,664,548,634,538,624"
+						shape="poly">
+					<area target="" alt="경상남도" title="경상남도" href="#"
+						onclick="return selectAreaName(`경남`)"
+						coords="343,509,364,524,387,548,380,560,412,569,433,569,444,580,477,584,501,576,507,596,533,620,519,630,509,642,463,662,477,673,458,671,462,683,453,729,434,742,336,733,319,719,315,699,314,683,308,681,318,673,299,645,289,620,304,595,293,570,315,527"
+						shape="poly">
+					<area target="" alt="전라북도" title="전라북도" href="#"
+						onclick="return selectAreaName(`전북`)"
+						coords="343,489,328,486,315,478,305,490,300,485,290,494,270,488,265,469,231,474,223,461,199,458,178,479,150,483,159,502,131,547,128,577,142,602,165,593,171,576,198,588,210,579,213,607,232,606,249,611,264,608,280,603,292,612,305,598,290,570,311,525,344,504"
+						shape="poly">
+					<area target="" alt="전라남도" title="전라남도" href="#"
+						onclick="return selectAreaName(`전남`)"
+						coords="287,615,273,606,259,612,209,604,207,581,194,588,174,578,170,593,146,599,121,577,97,614,50,635,23,696,54,774,118,824,181,820,181,763,206,747,230,771,258,764,274,742,312,748,315,732,315,697,303,680,312,667,292,643,202,638,197,649,177,651,161,652,154,643,143,638,149,621,163,612,177,616,190,617,200,628,208,638,293,644"
+						shape="poly">
+					<area target="" alt="광주광역시" title="광주광역시" href="#"
+						onclick="return selectAreaName(`광주`)"
+						coords="200,633,187,621,160,617,150,624,146,636,163,650,182,649,196,647"
+						shape="poly">
+					<area target="" alt="제주도" title="제주도" href="#"
+						onclick="return selectAreaName(`제주`)"
+						coords="678,644,619,670,619,694,642,704,667,699,683,707,727,691,741,674,740,655,722,641"
+						shape="poly">
+				</map>
+			</div>
+			<div id="user">
+				<div id="selectForm">
+					<form method="post">
+						<label>검색날짜 : </label> <input id="now_date" type="date" min="2020-03-04" max="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label>검색지역 : </label> <input type="text" id="Area"
+							value="검색할 지역을 선택해주세요" size=25pt disabled="disabled">
+						<button onclick="return selectAreaName(`합계`)">시도별 총합계</button>
+						<button onclick="return selectAreaName(`검역`)">검역소</button>
+						<br>
+						<input id="show_res_btn" type="button"
+							onclick="showResult(this.form)" value="결과보기">
+					</form>
+				</div>
+				<div id="resultForm">
+				</div>
+			</div>
+		</div>
+	</section>
+	<footer> 
+		<b>Fisco&Bizpark</b>
+	</footer>
 </body>
-
-
-
-
 </html>
