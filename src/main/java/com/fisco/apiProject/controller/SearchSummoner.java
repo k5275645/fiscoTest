@@ -41,7 +41,7 @@ public class SearchSummoner {
 			br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
 			String result = "";
 			String line;
-			while((line = br.readLine()) != null) { // ï¿½Þ¾Æ¿ï¿½ ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ brï¿½ï¿½ï¿½ï¿½ ï¿½Ù´ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ°ï¿½ ï¿½ï¿½ï¿½ï¿½Ï°Ú´ï¿½.
+			while((line = br.readLine()) != null) { // ¹Þ¾Æ¿Â ¹®ÀÚ¿­À» °è¼Ó br¿¡¼­ ÁÙ´ÜÀ§·Î ¹Þ°í Ãâ·ÂÇÏ°Ú´Ù.
 				result = result + line;
 			}
 			
